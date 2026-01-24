@@ -1,28 +1,30 @@
-import google.generativeai as genai
 import streamlit as st
+import google.generativeai as genai
 
-# Streamlit secrets içindeki key'i alıyoruz
-# Eğer lokalde çalışıyorsan buraya direkt api_key="AIza..." yazabilirsin.
-try:
-    api_key = st.secrets["GOOGLE_API_KEYS"][0] # Secrets listesinden ilkini dener
-except:
-    api_key = input("API Key'inizi yapıştırın: ")
+st.title("Gemini Model Rehberi 🔍")
 
-genai.configure(api_key=api_key)
+# API Key Girişi
+api_key = st.text_input("API Key'inizi buraya yapıştırın:", type="password")
 
-print("\n--- ERİŞİLEBİLİR MODELLERİN LİSTESİ ---")
-try:
-    count = 0
-    for m in genai.list_models():
-        if 'generateContent' in m.supported_generation_methods:
-            print(f"- {m.name}")
-            count += 1
-    
-    if count == 0:
-        print("HATA: Hiçbir modele erişim izni görünmüyor. API Key veya faturalandırma ayarlarını kontrol et.")
-    else:
-        print(f"\nToplam {count} model bulundu.")
-        print("Tavsiye: Listede 'gemini-2.0', 'gemini-1.5-pro' veya 'exp' geçen en yeni versiyonu seçmelisin.")
+if api_key:
+    try:
+        genai.configure(api_key=api_key)
+        models = genai.list_models()
+        
+        st.success("Bağlantı Başarılı! Kullanabileceğin Modeller:")
+        
+        # Modelleri listele
+        model_list = []
+        for m in models:
+            if 'generateContent' in m.supported_generation_methods:
+                model_list.append(m.name)
+        
+        st.write(model_list)
+        
+        # Tavsiye
+        st.info("💡 **Startup Survivor** için bu listede 'pro' veya 'thinking' (varsa) geçen en güncel modeli seçmeliyiz.")
 
-except Exception as e:
-    print("Hata oluştu:", e)
+    except Exception as e:
+        st.error(f"Bir hata oluştu: {e}")
+else:
+    st.warning("Lütfen API Key girin.")
